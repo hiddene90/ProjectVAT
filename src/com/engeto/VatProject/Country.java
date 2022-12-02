@@ -35,7 +35,10 @@ public class Country {
         return standardRate;
     }
 
-    public void setStandardRate(double standardRate) {
+    public void setStandardRate(double standardRate) throws CountryException {
+        if(standardRate<0){
+            throw new CountryException("Daňová sazba nesmí být záporná! Zadaná hodnota: "+standardRate);
+        }
         this.standardRate = standardRate;
     }
 
@@ -43,7 +46,10 @@ public class Country {
         return reducedRate;
     }
 
-    public void setReducedRate(double reducedRate) {
+    public void setReducedRate(double reducedRate) throws CountryException {
+        if(reducedRate<0){
+            throw new CountryException("Daňová sazba nesmí být záporná! Zadaná hodnota: "+reducedRate);
+        }
         this.reducedRate = reducedRate;
     }
 
@@ -56,7 +62,20 @@ public class Country {
     }
     ///endregion
     public String getDescription(){
-        return name+ " ("+shortcut+"): "+standardRate+ " %";
+
+//        return name+ " ("+shortcut+"): "+standardRate+ " %";
+        return getName() + "  (" + getShortcut() + "):\t" + ratesFormatted(getStandardRate()) + " %  (" + ratesFormatted(getReducedRate()) + " %)";
+    }
+
+    public String ratesFormatted(double rate){
+        String rateFormatted = "";
+
+        if (Double.toString(rate).contains(".0")) {
+            rateFormatted = Double.toString(rate).replace(".0", "");
+        } else {
+            rateFormatted = Double.toString(rate);
+        }
+        return rateFormatted;
     }
 
 }
