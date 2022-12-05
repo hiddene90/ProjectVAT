@@ -1,14 +1,15 @@
 package com.engeto.VatProject;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+
 
 public class ListOfCountries {
     public static final String DELIMITER = "\t";
-    public static final String RATE ="0";
-    private static final String OUTPUT_FILE = "vat-over-"+RATE+".txt";
+    static final String SEPARATOR = "====================";
+    private static  double RATE = 20;
+
+
     List<Country> countries = new ArrayList<>();
 
 
@@ -56,32 +57,85 @@ public class ListOfCountries {
         }
     }
 
-    public void saveListToNewFile() {
-        try (
-                PrintWriter outputWriter = new PrintWriter(new FileWriter(OUTPUT_FILE))) {
-            for (Country country : countries
-            ) {
-                outputWriter.println(country.getDescription());
-//             outputWriter.println(country.getName() + "  (" + country.getShortcut() + "):\t" + country.ratesFormatted(country.getStandardRate()) + " %  (" + country.ratesFormatted(country.getReducedRate()) + " %)");
+    public List<Country> getListOverRateSorted(double RATE) {
+        List<Country> overRate = new ArrayList<>();
+        for (Country country : countries
+        ) {
+            if (country.getStandardRate() > (double) RATE && !country.isSpecialRate())
+                overRate.add(country);
+        }
+        overRate.sort(Collections.reverseOrder(new ComparatorByStandardRate()));
+        return overRate;
+    }
+    public List<Country> getListBellowRate() {
+        List<Country> bellowRate = new ArrayList<>();
 
-//                String standardRateForOutput = "";
-//                String reducedRateForOutput = "";
-//                if (Double.toString(country.getStandardRate()).contains(".0")) {
-//                    standardRateForOutput = Double.toString(country.getStandardRate()).replace(".0", "");
-//                } else {
-//                    standardRateForOutput = Double.toString(country.getStandardRate());
-//                }
-//                if (Double.toString(country.getReducedRate()).contains(".0")) {
-//                    reducedRateForOutput = Double.toString(country.getReducedRate()).replace(".0", "");
-//                } else {
-//                    reducedRateForOutput = Double.toString(country.getReducedRate());
-//                }
-//                    outputWriter.println(country.getName() + "  (" + country.getShortcut() + "):\t" + standardRateForOutput + " %  (" + reducedRateForOutput + " %)");
-            }
-            } catch(Exception e){
+        for (Country country: countries
+        ) {
+            if (country.getStandardRate() <= (double) RATE)
+                bellowRate.add(country);
+        }
+
+            return bellowRate;
+        }
+    public String bellowRateListToString(){
+        String result = "";
+        for (Country country: getListBellowRate()
+             ) {
+              result += country.getShortcut()+", ";
+        }
+    return (result.length()>2)?result.substring(0,result.length()-2): result;
+    }
+    public String result(double RATE) {
+        String result="";
+        for (Country country : getListOverRateSorted(RATE)
+        ) {
+            result += country.getDescription()+"\n";
+        }
+        result+= SEPARATOR+"\nSazba VAT "+RATE+" % nebo nižší nebo používají speciální sazbu: "+ bellowRateListToString();
+
+        return result;
+    }
+    public void resultWithAddedRateFromConsole () {
+        try{
+            Scanner scan = new Scanner(System.in);
+           String input = scan.nextLine();
+           input = input.replace(',', '.');
+
+
+            if (input.isEmpty()) {
+                RATE = 20;
+                saveListToNewFile();
+                System.out.println(result(RATE));
+            }else {
+                RATE = Double.parseDouble(input);
+                saveListToNewFile();
+                System.out.println(result(Double.parseDouble(input)));
+                }
+
+        }catch (NumberFormatException e){
+            System.err.println("Špatně zadaná sazba: "+ e.getLocalizedMessage());
+
+        }
+
+
+    }
+
+        public void saveListToNewFile () {
+            try (
+                    PrintWriter outputWriter = new PrintWriter(new FileWriter("vat-over-" + String.valueOf((int)RATE) + ".txt"))) {
+                for (Country country : getListOverRateSorted(RATE)
+                ) {
+                    outputWriter.println(country.getDescription());
+                }
+                outputWriter.println(SEPARATOR);
+                outputWriter.print("Sazba VAT "+RATE+" % nebo nižší nebo používají speciální sazbu: ");
+                outputWriter.print(bellowRateListToString());
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
         }
+
 
     }
