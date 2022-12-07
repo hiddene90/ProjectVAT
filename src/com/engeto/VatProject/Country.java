@@ -68,14 +68,8 @@ public class Country {
     }
 
     public String ratesFormatted(double rate){
-        String rateFormatted = "";
+        return Double.toString(rate).replace(".0", "");
 
-        if (Double.toString(rate).contains(".0")) {
-            rateFormatted = Double.toString(rate).replace(".0", "");
-        } else {
-            rateFormatted = Double.toString(rate);
-        }
-        return rateFormatted;
     }
 
 }
